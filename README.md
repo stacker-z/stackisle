@@ -31,13 +31,17 @@ works when the code is merged — no "works on my machine", no surprises in the 
 
 # Preview 
 **MacOS**
+
 `make prereq`
-![img.png](img.png)
+
+![precheck.png](precheck.png)
 
 `make health`
-![img_1.png](img_1.png)
+
+![health.png](health.png)
 
 **Linux**
+
 `pre-check` 
 
 ![img_2.png](img_2.png)
@@ -47,7 +51,7 @@ works when the code is merged — no "works on my machine", no surprises in the 
 ![img.png](img.png)
 
 `https://dev-local-www-brand.com`
-![img_2.png](img_2.png)
+![screen.png](screen.png)
 
 # AEM local DEV environment
 

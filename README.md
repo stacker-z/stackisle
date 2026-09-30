@@ -30,14 +30,22 @@ works when the code is merged — no "works on my machine", no surprises in the 
 **Start here** — Stackisle is the starting point for every project to clone, add to it own repo as needed and the SDK, run `make`. An opportunity to enhance and make it your own playbook by partnering with the [Claude.ai skills](./.claude/skills/SKILL.md).
 
 # Preview 
-`pre-check` (live example)
+**MacOS**
+`make prereq`
+![img.png](img.png)
 
+`make health`
+![img_1.png](img_1.png)
+
+**Linux**
+`pre-check` 
 ![img_2.png](img_2.png)
 
-
-Preview `make health` (live example)
-
+`make health`
 ![img.png](img.png)
+
+`https://dev-local-www-brand.com`
+![img_2.png](img_2.png)
 
 # AEM local DEV environment
 

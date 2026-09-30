@@ -29,10 +29,14 @@ works when the code is merged — no "works on my machine", no surprises in the 
 
 **Start here** — Stackisle is the starting point for every project to clone, add to it own repo as needed and the SDK, run `make`. An opportunity to enhance and make it your own playbook by partnering with the [Claude.ai skills](./.claude/skills/SKILL.md).
 
-preeq check
+# Preview 
+`pre-check` (live example)
+
 ![img_2.png](img_2.png)
 
-make health check
+
+Preview `make health` (live example)
+
 ![img.png](img.png)
 
 # AEM local DEV environment

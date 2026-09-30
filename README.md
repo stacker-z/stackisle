@@ -39,9 +39,11 @@ works when the code is merged — no "works on my machine", no surprises in the 
 
 **Linux**
 `pre-check` 
+
 ![img_2.png](img_2.png)
 
 `make health`
+
 ![img.png](img.png)
 
 `https://dev-local-www-brand.com`

@@ -51,7 +51,7 @@ works when the code is merged — no "works on my machine", no surprises in the 
 ![img.png](img.png)
 
 `https://dev-local-www-brand.com`
-![img_2.png](img_2.png)
+![screen.png](screen.png)
 
 # AEM local DEV environment
 

@@ -31,6 +31,7 @@ works when the code is merged — no "works on my machine", no surprises in the 
 
 # Preview 
 **MacOS**
+
 `make prereq`
 
 ![precheck.png](precheck.png)
@@ -40,6 +41,7 @@ works when the code is merged — no "works on my machine", no surprises in the 
 ![health.png](health.png)
 
 **Linux**
+
 `pre-check` 
 
 ![img_2.png](img_2.png)

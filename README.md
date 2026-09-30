@@ -32,10 +32,12 @@ works when the code is merged — no "works on my machine", no surprises in the 
 # Preview 
 **MacOS**
 `make prereq`
-![img.png](img.png)
+
+![precheck.png](precheck.png)
 
 `make health`
-![img_1.png](img_1.png)
+
+![health.png](health.png)
 
 **Linux**
 `pre-check` 

@@ -22,7 +22,7 @@ case "${1:-start}" in
     fi
 
     compose up -d dispatcher
-    ok "Dispatcher on ${CYAN}http://localhost:${DISPATCHER_PORT}${RESET} → publish :${AEM_PUBLISH_PORT}"
+    ok "Dispatcher on ${CYAN}${DISPATCHER_URL}${RESET} → publish :${AEM_PUBLISH_PORT}"
     info "Logs: ${CYAN}make logs-dispatcher${RESET}"
     echo "" ;;
   stop)

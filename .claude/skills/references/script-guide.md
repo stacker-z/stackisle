@@ -27,6 +27,7 @@ its own (`bash scripts/NN-*.sh`) from any directory.
 | `JAVA_HOME` | Blank → `java` on PATH; set → prepended to `PATH`. No auto-detection — `00` fails with a hint if the version is below `JAVA_REQUIRED` |
 | Paths | Only `SDK_DIR` and `INSTALL_DIR` come from `.env` (made absolute by `abs_path`: relative → project root, `~` → `$HOME`). Derived, not configurable: `AUTHOR_DIR` `PUBLISH_DIR` `DISPATCHER_DIR` `DISPATCHER_SRC_DIR` `CERTS_DIR` `NGINX_CONF_DIR` (all under `INSTALL_DIR`). Exported for compose; `$INSTALL_PATH_VARS` lists them |
 | `rel <path>` | Shortens a path for messages (relative when inside the project) |
+| URLs | From `.env` only: `LOCAL_HOSTNAME`, `HOSTS_IP` (+ `HOSTS_IP_RE`), `SMOKE_PATH`, `AEM_LOGIN_PATH`, `AEM_ADMIN_USER/PASSWORD`, `WKND_REPO`. Derived: `AUTHOR_URL`, `PUBLISH_URL`, `DISPATCHER_URL`, `HTTPS_SUFFIX`, `site_url <domain>`, `FIRST_DOMAIN`. `HOSTS_FILE` per OS. **Never hardcode a host, IP, port or path in a script** |
 | `CERT_FILE` / `KEY_FILE` | `${CERTS_DIR}/${CERT_NAME}.crt` / `.key` |
 | `DISPATCHER_IMAGE_FILE` / `DISPATCHER_LOG_DIR` / `DISPATCHER_CACHE_DIR` | `${DISPATCHER_DIR}/docker/image.env` / `…/logs` / `…/cache` |
 | `HOST_OS` | `uname` output, passed to the dispatcher container (as `docker_run.sh` does) |
@@ -136,6 +137,22 @@ dispatcher `localhost:9999` answers (not 000/5xx) · every
 
 Deletes named items only, never whole configurable directories. Keeps the SDK zip,
 `.env`, sources. Never removes system packages (prints how).
+
+## install-wknd.sh `[author|publish|all]`  (make wknd · make start-aem WKND=1)
+Optional WKND sample site. Resolves `aem-guides-wknd.all-<ver>.zip` via the GitHub releases
+API (latest, or `WKND_VERSION`; never the `.classic` 6.5 package), downloads it once to
+`SDK_DIR/packages/` (offline fallback: newest local zip). Per target in `WKND_TARGETS`:
+`wait_ready` (login 200 + `bundles.json` `s[]` active+fragment == total, **no timeout**,
+Ctrl+C trap) → skip if `service.jsp?cmd=ls` shows that `downloadName` with a `lastUnpacked`
+date (unless `FORCE=1`) → `curl -F file=@… -F install=true …/crx/packmgr/service.jsp`, must
+return `<status code="200">` → wait_ready again → check `/content/wknd/us/en.html`.
+Uses `AEM_ADMIN_USER`/`AEM_ADMIN_PASSWORD` (default admin/admin).
+
+## urls.sh `[urls|smoke]`  (make urls · make smoke)
+`urls` prints every URL built from `.env`. `smoke` curls `SMOKE_PATH` through each hop:
+Author login, Publish (admin auth), Dispatcher, Dispatcher with `Host: FIRST_DOMAIN` (shows
+`X-Vhost`), and every site URL without `-k` (so a 200 also proves the cert is trusted). It prints
+each exact curl (password masked) and exits non-zero if any hop isn't 200.
 
 ## set-paths.sh `<SDK_DIR> <INSTALL_DIR>`  (make set-paths)
 `make set-paths SDK_DIR=… INSTALL_DIR=…` (either or both). The Makefile passes only

@@ -36,8 +36,7 @@ case "${1:-start}" in
     running && compose exec -T nginx nginx -s reload >/dev/null 2>&1 || true
 
     ok "nginx running"
-    SUFFIX=""; [[ "$NGINX_HTTPS_PORT" != "443" ]] && SUFFIX=":${NGINX_HTTPS_PORT}"
-    for d in $CUSTOM_DOMAINS; do info "${CYAN}https://${d}${SUFFIX}${RESET}"; done
+    for d in $CUSTOM_DOMAINS; do info "${CYAN}$(site_url "$d")${RESET}"; done
     echo "" ;;
   reload)
     require_docker

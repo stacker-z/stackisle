@@ -62,6 +62,8 @@ aem-local-dev/
 │   ├── 08-start-nginx.sh        # start|stop|reload nginx SSL container
 │   ├── 09-health-check.sh       # Check every hop; --wait polls until healthy
 │   ├── uninstall.sh             # `make uninstall` — revert everything (keeps zip, .env)
+│   ├── install-wknd.sh          # `make wknd` / `start-aem WKND=1` — optional WKND sample site
+│   ├── set-paths.sh             # `make set-paths` — write SDK_DIR / INSTALL_DIR into .env
 │   └── magento/                 # Magento TEST stack — ON HOLD, untested, not wired into make
 │                                #   (see docs/session-handoff.md → open items)
 │
@@ -135,6 +137,10 @@ make restart
 make set-paths INSTALL_DIR=/opt/aem   # write SDK_DIR / INSTALL_DIR into .env (either or both)
 make paths                         # show the resolved layout (read-only)
 make dispatcher-validate           # Adobe validator (phases 1–3)
+make urls                          # every URL, built from .env
+make smoke                         # test SMOKE_PATH on every hop (prints the curl commands)
+make wknd                          # optional: WKND sample site on Author + Publish
+make start-aem WKND=1              # start AEM, wait until ready, then install WKND
 make uninstall                     # revert everything (asks)
 ```
 
@@ -208,6 +214,13 @@ dispatcher's host-side mapping for direct browser/curl access.
 - **Deletions are item-specific** — uninstall/clean remove named stackisle files, never whole
   configurable directories, and process matching must target the java command line only.
 - **Config input file** for domains and necesary ports is `.env`. and cert name.
+- **Nothing environment-specific is hardcoded** — hosts, IPs, ports, domains, test paths and
+  credentials come from `.env` (defaults in `scripts/lib/common.sh`: `LOCAL_HOSTNAME`,
+  `HOSTS_IP`, `*_PORT`, `CUSTOM_DOMAINS`, `SMOKE_PATH`, `AEM_LOGIN_PATH`, `AEM_ADMIN_*`,
+  `WKND_*`). Scripts use the derived `AUTHOR_URL`, `PUBLISH_URL`, `DISPATCHER_URL`,
+  `site_url <domain>`. In docs, prefer `make urls` / `make smoke` over hand-typed URLs.
+  Fixed by design (not per-user): container names/ports inside Docker (`aem-dispatcher:80`,
+  `host.docker.internal`) and the JDWP bind `127.0.0.1` (security).
 - **Must verify all prerequiste installers** before running `make`.
 - **Make** must be extendable to enhance and add more scripts as name suggest stakisle.
   New stacks go in `mk/<stack>.mk` (auto-included; see `mk/README.md`).

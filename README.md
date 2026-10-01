@@ -94,7 +94,8 @@ One row per domain in `CUSTOM_DOMAINS` (`.env`). To add a site, see [Adding a do
 
 - Docker (Desktop on mac/windows) with compose v2, **Java 21+** (AEM SDK 2026.x refuses to start on 17), curl, unzip, openssl; mkcert optional (trusted certs)
 - `make install-prereq` installs them on mac/linux; Windows: `powershell -File prereq/windows/install-prereq.ps1` (Admin), then use Git Bash
-- The AEM SDK zip from [Adobe Software Distribution](https://experience.adobe.com/#/downloads/content/software-distribution/en/aemcloud.html) | [direct-link](https://experience.adobe.com/#/downloads/bin/softwaredistribution/package/download.file/aem-sdk-2026.9.28386.20260923T071724Z-260900.zip?path=%2Fcontent%2Fdam%2Faemcloud%2Fpublic%2Faem-sdk-2026.9.28386.20260923T071724Z-260900.zip&generatedtoken=7F2xijOFSKMvQj7DCuUFAKKIZOYa_mxNVSizeivZFWn7D9HcUobz_D2vFtM2d3SaX7LNARlIuCHGrurHIdDTpVbcFzd1pgXjB1yxU7bmwbuAOhTYsof25dmMjAezoe4-ypDK034i2pkRPO3apwZbiUoNcp1miNFGUwHGLYTDNtT1tcfVWvnJ6jeOZUas3SFhDCvY0A5fkQDdN6DyigKb1D9sailPpZnfgOWkLhs44tMuCMdFDkQEVG0ux0CYSsyH) placed at `sdk/aem-sdk-<version>.zip`
+- The AEM SDK zip from [Adobe Software Distribution](https://experience.adobe.com/#/downloads/content/software-distribution/en/aemcloud.html)
+  (sign in with your Adobe ID; search "AEM SDK"), placed at `sdk/aem-sdk-<version>.zip`
   (you should have access and the dispatcher tools are inside it — nothing else to download)
 
 ## Quick start
@@ -139,8 +140,9 @@ Changing paths doesn't move an existing install. `set-paths` warns and explains 
 
 | make target       | Script                                            | What it does                                        |
 |-------------------|---------------------------------------------------|-----------------------------------------------------|
-| `help`            | `help.sh`                                         | List all targets                                    |
-| `env`             | `set-paths`                                       | Create .env file and set paths                      |
+| `help`            | built into `Makefile`                             | List all targets                                    |
+| `env`             | built into `Makefile`                             | Create `.env` from `.env.example` (if missing)      |
+| `set-paths`       | `set-paths.sh`                                    | Set `SDK_DIR` / `INSTALL_DIR` in `.env`             |
 | `prereq`          | `00-check-prereq.sh`                              | Verify tools, Java 21+, Docker daemon, SDK zip      |
 | `sdk`             | `01-unpack-sdk.sh`, `02-create-author-publish.sh` | Unpack SDK, create author/ + publish/               |
 | `certs`           | `03-create-cert.sh`                               | `certs/server.crt/.key` for all domains             |
@@ -149,8 +151,8 @@ Changing paths doesn't move an existing install. `set-paths` warns and explains 
 | `hosts`           | `update-etc-hosts.sh`                             | Map domains → 127.0.0.1                             |
 | `start`           | `06`, `07`, `08`                                  | Start AEM, dispatcher, nginx                        |
 | `health` / `wait` | `09-health-check.sh`                              | Check every hop / poll until healthy                |
-| `make`            | `all above command`                               | One command to install and start all above services |                              
-| `stop`            | `Stop all services`                               | Graceful stops all services                         |
+| `make`            | all of the above                                  | One command to install and start all above services |
+| `stop`            | `08`, `07`, `06` (stop)                           | Graceful stop of all services                       |
 
 # Refer detailed step by step command guide
 from [./docs/setup-guide.md](./docs/setup-guide.md)

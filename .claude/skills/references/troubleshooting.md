@@ -60,6 +60,13 @@ Very old SDKs ship the tools separately. Put the `-unix.sh` into `sdk/aem-sdk-*/
   then **log out and back in** (`newgrp docker` works for one terminal only). The group
   change doesn't apply to sessions that were already open, Claude Code included.
 
+### `make health`: "Docker CLI cannot reach the daemon from this shell", but the sites work
+The containers are fine. This **shell** can't talk to Docker. Most often it's
+`permission denied`: the terminal, or the IDE that opened it (IntelliJ, VS Code),
+was started before the user joined the `docker` group. Open a new login shell
+(log out/in, or restart the IDE), or run `newgrp docker`. Otherwise check
+`docker context show` and `echo $DOCKER_HOST`.
+
 ---
 
 ## Dispatcher errors

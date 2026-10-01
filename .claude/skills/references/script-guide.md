@@ -23,7 +23,8 @@ its own (`bash scripts/NN-*.sh`) from any directory.
 |----------|-------|
 | `cd $ROOT_DIR` | Scripts work from any cwd |
 | `.env` loading | `set -a; source .env` — quoted values OK. Empty `JAVA_HOME` is unset; a set one is prepended to `PATH` |
-| Defaults | `CUSTOM_DOMAINS`, ports, run modes, `AEM_JVM_OPTS`, `DISPATCHER_PORT=9999`, `CERT_NAME=server`, `JAVA_REQUIRED=21`, `HEALTH_TIMEOUT=900`, `AEM_STOP_TIMEOUT=0` (no limit), `SDK_DIR=./sdk`, `INSTALL_DIR=./sdk` |
+| Defaults | `CUSTOM_DOMAINS`, ports, run modes, `AEM_JVM_OPTS`, `DISPATCHER_PORT=9999`, `CERT_NAME=server`, `JAVA_REQUIRED=21`, `HEALTH_TIMEOUT=900`, `AEM_STOP_TIMEOUT=0` (no limit — stop waits until AEM has exited), `SDK_DIR=./sdk`, `INSTALL_DIR=./sdk` |
+| `JAVA_HOME` | Blank → `java` on PATH; set → prepended to `PATH`. No auto-detection — `00` fails with a hint if the version is below `JAVA_REQUIRED` |
 | Paths | Only `SDK_DIR` and `INSTALL_DIR` come from `.env` (made absolute by `abs_path`: relative → project root, `~` → `$HOME`). Derived, not configurable: `AUTHOR_DIR` `PUBLISH_DIR` `DISPATCHER_DIR` `DISPATCHER_SRC_DIR` `CERTS_DIR` `NGINX_CONF_DIR` (all under `INSTALL_DIR`). Exported for compose; `$INSTALL_PATH_VARS` lists them |
 | `rel <path>` | Shortens a path for messages (relative when inside the project) |
 | `CERT_FILE` / `KEY_FILE` | `${CERTS_DIR}/${CERT_NAME}.crt` / `.key` |
@@ -33,9 +34,7 @@ its own (`bash scripts/NN-*.sh`) from any directory.
 | `OS` / `as_root` | `mac`/`linux`/`windows`; `as_root` = sudo except Git Bash/root |
 | `port_open <port> [host]` | Pure-bash `/dev/tcp` probe (no lsof) |
 | `http_code <curl args>` | Prints status, `000` if unreachable |
-| `java_major` | Handles `1.8` and `21.0.x` formats |
-| `auto_java_home` | Runs on load. If `.env` leaves `JAVA_HOME` blank and the default `java` is older than `JAVA_REQUIRED`, picks a JDK: mac `/usr/libexec/java_home -v N+`, linux newest `/usr/lib/jvm/java-*-openjdk*` ≥ N. Exports `JAVA_HOME` + `PATH` for the scripts only |
-| `sdk_zip` `sdk_dir` `quickstart_jar` `dispatcher_tools_sh` `dispatcher_sdk_dir` | Globs under `SDK_DIR` (`find -L`, follows symlinks) — never hardcode versions |
+| `java_major` | Handles `1.8` and `21.0.x` formats || `sdk_zip` `sdk_dir` `quickstart_jar` `dispatcher_tools_sh` `dispatcher_sdk_dir` | Globs under `SDK_DIR` (`find -L`, follows symlinks) — never hardcode versions |
 | `author_jar` `publish_jar` | `${AUTHOR_DIR}/aem-author-p<port>.jar` etc. |
 | `require_docker` | Fails if CLI missing or daemon unreachable |
 | `compose ...` | `docker compose` with `${DISPATCHER_DIR}/docker/image.env` exported |

@@ -99,7 +99,7 @@ start_one() {
     tail -n 15 "$log" | sed 's/^/      /'
     fail "${name} failed to start."
   fi
-  ok "${name} starting on ${CYAN}http://localhost:${port}${RESET} (debug :${dport}, run modes ${runmode}, PID $(cat "$pidf"))"
+  ok "${name} starting on ${CYAN}http://${LOCAL_HOSTNAME}:${port}${RESET} (debug 127.0.0.1:${dport}, run modes ${runmode}, PID $(cat "$pidf"))"
   info "log: ${CYAN}$(rel "$log")${RESET}"
 }
 

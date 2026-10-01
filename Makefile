@@ -30,9 +30,9 @@ CYAN  := \033[36m
 
 .PHONY: all help env install-prereq prereq setup \
         sdk sdk-unpack instances certs dispatcher dispatcher-validate nginx hosts hosts-remove \
-        start start-aem start-dispatcher start-nginx \
+        start start-aem start-dispatcher start-nginx wknd \
         stop stop-aem stop-dispatcher stop-nginx restart restart-aem reload-nginx \
-        set-paths paths status health wait logs logs-author logs-publish logs-dispatcher logs-nginx \
+        set-paths paths status health urls smoke wait logs logs-author logs-publish logs-dispatcher logs-nginx \
         clean uninstall
 
 ##@ Main
@@ -103,8 +103,12 @@ hosts-remove: ## Remove stackisle entries from hosts file (sudo)
 ##@ Run
 start: start-aem start-dispatcher start-nginx ## 06-08 Start AEM, dispatcher, nginx
 
-start-aem: ## 06 Start Author + Publish
+start-aem: ## 06 Start Author + Publish (add WKND=1 to also install the WKND sample site)
 	@bash $(S)/06-start-aem.sh start
+	@if [ "$(WKND)" = "1" ]; then bash $(S)/install-wknd.sh; fi
+
+wknd: ## Install WKND sample site on Author + Publish (FORCE=1 to reinstall)
+	@bash $(S)/install-wknd.sh
 
 start-dispatcher: ## 07 Start dispatcher container
 	@bash $(S)/07-start-dispatcher.sh start
@@ -143,6 +147,12 @@ paths: ## Show the layout derived from SDK_DIR + INSTALL_DIR (.env) — read-onl
 ##@ Observe
 health: ## 09 One-shot health check of every hop
 	@bash $(S)/09-health-check.sh
+
+urls: ## Print every URL of this setup (built from .env)
+	@bash $(S)/urls.sh urls
+
+smoke: ## Test SMOKE_PATH on every hop, printing the exact curl used
+	@bash $(S)/urls.sh smoke
 
 status: health ## Alias for health
 

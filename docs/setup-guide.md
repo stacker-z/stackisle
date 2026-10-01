@@ -9,6 +9,12 @@ what to run, what each step does, how to check it and how to undo it.
 > Written from a Linux run. A few check commands are Linux-only (`ss`, `getent`,
 > `ls --time-style`, `apt`); for the macOS equivalents, see the table in
 > [session-handoff.md](session-handoff.md#macos-test-checklist).
+>
+> **URLs, ports and the test page shown here are the `.env` defaults.** Scripts never
+> hardcode them; they build every URL from `.env` (`LOCAL_HOSTNAME`, `*_PORT`,
+> `CUSTOM_DOMAINS`, `HOSTS_IP`, `SMOKE_PATH`). Your actual values:
+> - `make urls` prints every URL of your setup
+> - `make smoke` tests every hop on `SMOKE_PATH` and prints the exact `curl` it ran
 
 ---
 
@@ -275,17 +281,49 @@ Start a single instance: `bash scripts/06-start-aem.sh start publish`
 
 ---
 
+## Step 9b — (optional) WKND sample site
+
+```bash
+make wknd                    # AEM already running
+# or in one go with step 9:
+make start-aem WKND=1
+```
+
+Installs Adobe's WKND reference site (`aem-guides-wknd.all-<ver>.zip`) on Author and Publish:
+1. Resolves the **latest** release on github.com/adobe/aem-guides-wknd (or `WKND_VERSION` in `.env`)
+   and downloads it once to `SDK_DIR/packages/`. If GitHub isn't reachable, it uses a zip already there.
+2. Waits until AEM is ready (login page + all OSGi bundles active), with **no timeout**.
+   Progress every 30s; Ctrl+C stops only the waiting.
+3. Skips an instance where this version is already installed (`FORCE=1 make wknd` reinstalls).
+4. Uploads and installs it through the Package Manager API (`/crx/packmgr/service.jsp`, admin login
+   from `AEM_ADMIN_USER`/`AEM_ADMIN_PASSWORD`), waits for bundles again, and checks
+   `/content/wknd/us/en.html`.
+
+**Check:** `make urls` lists your Author URL (open `/sites.html` there). After steps 10–11,
+run `make smoke` to test `SMOKE_PATH` through every hop.
+**Changes:** content in the AEM repositories, plus the zip in `SDK_DIR/packages/`.
+**Undo:** uninstall/delete the package in Package Manager (`/crx/packmgr` on each instance);
+`make uninstall` removes the repositories entirely.
+
+---
+
 ## Step 10 — Start the dispatcher container
 
 ```bash
 make start-dispatcher
 docker ps --filter name=aem-dispatcher
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost:9999/content/wknd/us/en.html   # 200
-curl -sI -H "Host: dev-local-www-brand.com" http://localhost:9999/content/wknd/us/en.html | grep -i x-vhost
+make smoke          # "Dispatcher → Publish" and "Dispatcher as <domain>" should be 200
 ```
 
+`make smoke` prints the exact commands it runs, built from `.env`. With the defaults they are:
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:9999/content/wknd/us/en.html
+curl -s -o /dev/null -w "%{http_code}\n" -H "Host: dev-local-www-brand.com" http://localhost:9999/content/wknd/us/en.html
+```
+(`DISPATCHER_URL` + `SMOKE_PATH`; the Host header uses the first `CUSTOM_DOMAINS` entry, as nginx sends it.)
+
 Creates network `aem-local-net`, volume `aem-dispatcher-cache` and container
-`aem-dispatcher` (host port 9999). The service mirrors Adobe's
+`aem-dispatcher` (host port `DISPATCHER_PORT`). The service mirrors Adobe's
 `bin/docker_run.sh`: same env and mounts, including `import_sdk_config.sh`, the
 hook that applies your `dispatcher/src`.
 
@@ -311,8 +349,7 @@ immutable on AEMaaCS (*DO NOT EDIT*). For per-domain config, edit
 ```bash
 ss -ltnp | grep -E ':(80|443) '        # must be empty first
 make start-nginx
-curl -s -o /dev/null -w "%{http_code}\n" https://dev-local-www-brand.com/content/wknd/us/en.html   # 200, no -k needed with mkcert
-curl -s -o /dev/null -w "%{http_code} → %{redirect_url}\n" http://dev-local-www-brand.com/           # 301 → https
+make smoke          # every "Site <domain>" line should be 200 (no -k: proves the cert is trusted)
 ```
 
 The script tests the config first (`nginx -t` in a throwaway container). It
@@ -327,6 +364,8 @@ then starts `aem-nginx` on host ports 80 and 443. The first run downloads
 ```bash
 make health       # one-shot
 make wait         # poll until healthy (HEALTH_TIMEOUT)
+make urls         # every URL of your setup, from .env
+make smoke        # SMOKE_PATH through every hop, with the exact curl commands
 ```
 
 Checks Author, Publish, both containers, dispatcher, every https domain, hosts

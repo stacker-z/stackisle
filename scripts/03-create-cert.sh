@@ -1,8 +1,8 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────
 # 03-create-cert.sh
-# Generate ${CERTS_DIR}/${CERT_NAME}.crt + .key (default certs/server.crt)
-# SANs = every domain in CUSTOM_DOMAINS + localhost + 127.0.0.1
+# Generate ${CERTS_DIR}/${CERT_NAME}.crt + .key (default INSTALL_DIR/certs/server.crt)
+# SANs = every domain in CUSTOM_DOMAINS + LOCAL_HOSTNAME + HOSTS_IP (all from .env)
 #   - mkcert available → locally-trusted cert (no browser warning)
 #   - otherwise        → openssl self-signed (browser warning)
 # Idempotent: regenerates only when CUSTOM_DOMAINS changes or FORCE=1.
@@ -13,7 +13,7 @@ source "$(dirname "$0")/lib/common.sh"
 
 step "Generating SSL certificate"
 
-SANS="$(echo "$CUSTOM_DOMAINS localhost 127.0.0.1" | tr -s ' ' '\n' | awk 'NF && !seen[$0]++' | tr '\n' ' ')"
+SANS="$(echo "$CUSTOM_DOMAINS $LOCAL_HOSTNAME $HOSTS_IP" | tr -s ' ' '\n' | awk 'NF && !seen[$0]++' | tr '\n' ' ')"
 SANS="${SANS% }"
 STAMP="${CERTS_DIR}/.${CERT_NAME}.sans"
 

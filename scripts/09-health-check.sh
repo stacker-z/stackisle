@@ -1,17 +1,15 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────
 # 09-health-check.sh [--wait]
-# Check every hop of the chain:
-#   Author :4502 | Publish :4503 | Dispatcher :9999 → Publish
-#   nginx https://<domain> → Dispatcher → Publish | /etc/hosts
+# Check every hop of the chain (all hosts/ports/paths from .env via common.sh):
+#   AUTHOR_URL | PUBLISH_URL | DISPATCHER_URL → Publish
+#   nginx https://<domain> → Dispatcher → Publish | hosts file | cert SANs
 # --wait : poll until healthy or HEALTH_TIMEOUT seconds (AEM first boot is slow)
 # ─────────────────────────────────────────────────────────────
 
 source "$(dirname "$0")/lib/common.sh"
 
 WAIT=0; [[ "$1" == "--wait" ]] && WAIT=1
-HOSTS_FILE=/etc/hosts; [[ "$OS" == "windows" ]] && HOSTS_FILE=/c/Windows/System32/drivers/etc/hosts
-SUFFIX=""; [[ "$NGINX_HTTPS_PORT" != "443" ]] && SUFFIX=":${NGINX_HTTPS_PORT}"
 ERRORS=0
 
 pass() { echo -e "  ${GREEN}✔${RESET} $*"; }
@@ -28,10 +26,8 @@ check() {
 run_checks() {
   ERRORS=0
   echo -e "  ${BOLD}AEM${RESET}"
-  check "Author   http://localhost:${AEM_AUTHOR_PORT}"  "200" \
-        "http://localhost:${AEM_AUTHOR_PORT}/libs/granite/core/content/login.html"
-  check "Publish  http://localhost:${AEM_PUBLISH_PORT}" "200|302|401|403" \
-        "http://localhost:${AEM_PUBLISH_PORT}/libs/granite/core/content/login.html"
+  check "Author   ${AUTHOR_URL}"  "200" "${AUTHOR_URL}${AEM_LOGIN_PATH}"
+  check "Publish  ${PUBLISH_URL}" "200|302|401|403" "${PUBLISH_URL}${AEM_LOGIN_PATH}"
 
   echo -e "  ${BOLD}Docker${RESET}"
   local derr
@@ -55,18 +51,17 @@ run_checks() {
 
   # Any real response from httpd means dispatcher is up; 502/503 = can't reach publish
   echo -e "  ${BOLD}Dispatcher${RESET}"
-  check "Dispatcher http://localhost:${DISPATCHER_PORT}" "[1-4][0-9][0-9]" \
-        "http://localhost:${DISPATCHER_PORT}/"
+  check "Dispatcher ${DISPATCHER_URL}" "[1-4][0-9][0-9]" "${DISPATCHER_URL}/"
 
   echo -e "  ${BOLD}nginx (SSL) → Dispatcher → Publish${RESET}"
   for d in $CUSTOM_DOMAINS; do
-    check "https://${d}${SUFFIX}" "[1-4][0-9][0-9]" \
-          --resolve "${d}:${NGINX_HTTPS_PORT}:127.0.0.1" "https://${d}${SUFFIX}/"
+    check "$(site_url "$d")" "[1-4][0-9][0-9]" \
+          --resolve "${d}:${NGINX_HTTPS_PORT}:${HOSTS_IP}" "$(site_url "$d")/"
   done
 
   echo -e "  ${BOLD}Hosts / cert${RESET}"
   for d in $CUSTOM_DOMAINS; do
-    grep -qE "^[[:space:]]*127\.0\.0\.1([[:space:]]+[^[:space:]#]+)*[[:space:]]+${d//./\\.}([[:space:]]|#|$)" "$HOSTS_FILE" 2>/dev/null \
+    grep -qE "^[[:space:]]*${HOSTS_IP_RE}([[:space:]]+[^[:space:]#]+)*[[:space:]]+${d//./\\.}([[:space:]]|#|$)" "$HOSTS_FILE" 2>/dev/null \
       && pass "${d} in ${HOSTS_FILE}" || bad "${d} missing from ${HOSTS_FILE} (make hosts)"
   done
   if [[ -f "$CERT_FILE" ]]; then
@@ -101,10 +96,12 @@ echo ""
 if (( ERRORS == 0 )); then
   echo -e "  ${GREEN}${BOLD}All services healthy.${RESET}"
   echo ""
-  info "Author     ${CYAN}http://localhost:${AEM_AUTHOR_PORT}${RESET}  (admin/admin)"
-  info "Publish    ${CYAN}http://localhost:${AEM_PUBLISH_PORT}${RESET}"
-  info "Dispatcher ${CYAN}http://localhost:${DISPATCHER_PORT}${RESET}"
-  for d in $CUSTOM_DOMAINS; do info "Site       ${CYAN}https://${d}${SUFFIX}${RESET}"; done
+  info "Author     ${CYAN}${AUTHOR_URL}${RESET}  (${AEM_ADMIN_USER} / AEM_ADMIN_PASSWORD)"
+  info "Publish    ${CYAN}${PUBLISH_URL}${RESET}"
+  info "Dispatcher ${CYAN}${DISPATCHER_URL}${RESET}"
+  for d in $CUSTOM_DOMAINS; do info "Site       ${CYAN}$(site_url "$d")${RESET}"; done
+  echo ""
+  info "End-to-end test of ${SMOKE_PATH}: ${CYAN}make smoke${RESET}"
   echo ""
   exit 0
 fi

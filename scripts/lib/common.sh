@@ -62,6 +62,28 @@ fi
 # 0 = no limit (default). Set seconds only for unattended use (e.g. CI) — on timeout
 # stop just reports and exits non-zero; AEM keeps shutting down on its own.
 : "${AEM_STOP_TIMEOUT:=0}"
+: "${AEM_ADMIN_USER:=admin}"
+: "${AEM_ADMIN_PASSWORD:=admin}"
+
+# ── URLs — built only from .env values, never hardcoded in scripts ──
+# LOCAL_HOSTNAME   how this machine reaches Author/Publish/Dispatcher
+# SMOKE_PATH       page used for end-to-end checks (make smoke / health / wknd)
+# AEM_LOGIN_PATH   page that answers 200 once AEM is up (readiness)
+# HOSTS_IP         IP the CUSTOM_DOMAINS map to in the hosts file (and in the cert SANs)
+: "${LOCAL_HOSTNAME:=localhost}"
+: "${HOSTS_IP:=127.0.0.1}"
+: "${SMOKE_PATH:=/content/wknd/us/en.html}"
+: "${AEM_LOGIN_PATH:=/libs/granite/core/content/login.html}"
+: "${WKND_REPO:=adobe/aem-guides-wknd}"
+HOSTS_IP_RE="${HOSTS_IP//./\\.}"                          # for grep -E
+
+AUTHOR_URL="http://${LOCAL_HOSTNAME}:${AEM_AUTHOR_PORT}"
+PUBLISH_URL="http://${LOCAL_HOSTNAME}:${AEM_PUBLISH_PORT}"
+DISPATCHER_URL="http://${LOCAL_HOSTNAME}:${DISPATCHER_PORT}"
+# Port suffix only when nginx isn't on the standard port (URLs stay portless by default)
+HTTPS_SUFFIX=""; [[ "$NGINX_HTTPS_PORT" != "443" ]] && HTTPS_SUFFIX=":${NGINX_HTTPS_PORT}"
+site_url() { echo "https://${1}${HTTPS_SUFFIX}"; }        # site_url <domain>
+FIRST_DOMAIN="${CUSTOM_DOMAINS%% *}"
 
 
 # ── Install paths (override in .env) ─────────────────────────
@@ -118,6 +140,10 @@ detect_os() {
 }
 OS="$(detect_os)"
 
+# System hosts file for this OS (used by update-etc-hosts.sh, health check, Magento)
+HOSTS_FILE=/etc/hosts
+[[ "$OS" == "windows" ]] && HOSTS_FILE=/c/Windows/System32/drivers/etc/hosts
+
 # sudo is not available in Git Bash on Windows (run the shell as Admin instead)
 as_root() {
   if [[ "$OS" == "windows" || "$(id -u 2>/dev/null)" == "0" ]]; then "$@"; else sudo "$@"; fi
@@ -125,8 +151,8 @@ as_root() {
 
 # ── Ports / HTTP ─────────────────────────────────────────────
 # Pure-bash TCP probe — no lsof/netstat needed (works on mac/linux/Git Bash)
-port_open() {
-  (exec 3<>"/dev/tcp/${2:-127.0.0.1}/$1") 2>/dev/null
+port_open() {  # port_open <port> [host]  (host defaults to LOCAL_HOSTNAME from .env)
+  (exec 3<>"/dev/tcp/${2:-$LOCAL_HOSTNAME}/$1") 2>/dev/null
 }
 
 # Prints the HTTP status code (000 when unreachable)

@@ -78,6 +78,7 @@ curl -sk -o /dev/null -w "%{http_code}\n" https://dev-local-www-brand.com/
 | `08-start-nginx.sh` | `start\|stop\|reload` nginx SSL container (compose service `nginx`) |
 | `09-health-check.sh` | Checks every hop; `--wait` polls until healthy or `HEALTH_TIMEOUT` |
 | `lib/common.sh` | Sourced by all scripts: .env, defaults, derived paths, SDK globs, `port_open`, `compose()` |
+| `install-wknd.sh` | `make wknd` / `make start-aem WKND=1`: latest (or pinned) WKND "all" package from GitHub → Package Manager API on Author + Publish; waits for readiness without timeout; skips if installed |
 | `uninstall.sh` | `make uninstall`: graceful AEM stop (aborts if still running), containers/images/volume, hosts, generated files |
 | `magento/magento.sh` | Magento **test** stack — on hold, untested, not in make (see `docs/session-handoff.md`) |
 

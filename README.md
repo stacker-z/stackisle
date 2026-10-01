@@ -172,12 +172,26 @@ needed. For per-domain vhosts, see `.claude/skills/references/dispatcher-config.
 
 ```bash
 make start | stop | restart | health
+make urls       # every URL of your setup (built from .env — nothing hardcoded)
+make smoke      # test SMOKE_PATH on every hop, printing the exact curl used
 make stop-aem   # graceful: waits until the repository has closed — never force-kills
 make restart-aem
 make logs-author | logs-publish | logs-dispatcher | logs-nginx
 make clean      # remove generated certs/conf (keeps AEM + SDK)
 make uninstall  # revert everything: containers, images, hosts entries, AEM repos (asks)
 ```
+
+## Sample content (optional): WKND
+
+```bash
+make wknd                  # install Adobe's WKND site on Author + Publish (AEM running)
+make start-aem WKND=1      # start AEM, wait until ready, then install WKND
+make WKND=1                # full setup including WKND
+FORCE=1 make wknd          # reinstall
+```
+Latest release from the GitHub repo in `WKND_REPO` (default `adobe/aem-guides-wknd`), or pin
+`WKND_VERSION` in `.env`. Skips instances where it's already installed. Then run `make smoke`:
+it tests `SMOKE_PATH` (default the WKND home page) on every hop and site.
 
 ## Extending
 **Magento (on hold):** - TODO

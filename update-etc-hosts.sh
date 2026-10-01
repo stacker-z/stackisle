@@ -1,20 +1,19 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────
 # update-etc-hosts.sh [add|remove]
-# Map every domain in CUSTOM_DOMAINS (.env) to 127.0.0.1.
+# Map every domain in CUSTOM_DOMAINS to HOSTS_IP (both from .env, default 127.0.0.1).
 # Lines are tagged "# stackisle" so they can be removed cleanly.
 # mac/linux: uses sudo. Windows (Git Bash): run the shell as Administrator.
+# HOSTS_FILE (per OS) comes from scripts/lib/common.sh.
 # ─────────────────────────────────────────────────────────────
 
 set -e
 source "$(dirname "$0")/scripts/lib/common.sh"
 
 TAG="# stackisle"
-HOSTS_FILE=/etc/hosts
-[[ "$OS" == "windows" ]] && HOSTS_FILE=/c/Windows/System32/drivers/etc/hosts
 
 has_entry() {
-  grep -qE "^[[:space:]]*127\.0\.0\.1([[:space:]]+[^[:space:]#]+)*[[:space:]]+${1//./\\.}([[:space:]]|#|$)" "$HOSTS_FILE"
+  grep -qE "^[[:space:]]*${HOSTS_IP_RE}([[:space:]]+[^[:space:]#]+)*[[:space:]]+${1//./\\.}([[:space:]]|#|$)" "$HOSTS_FILE"
 }
 
 flush_dns() {
@@ -33,8 +32,8 @@ case "${1:-add}" in
       if has_entry "$d"; then
         ok "${d} already mapped — skipping."
       else
-        printf '127.0.0.1\t%s\t%s\n' "$d" "$TAG" | as_root tee -a "$HOSTS_FILE" >/dev/null
-        ok "Added 127.0.0.1 ${CYAN}${d}${RESET}"
+        printf '%s\t%s\t%s\n' "$HOSTS_IP" "$d" "$TAG" | as_root tee -a "$HOSTS_FILE" >/dev/null
+        ok "Added ${HOSTS_IP} ${CYAN}${d}${RESET}"
         CHANGED=1
       fi
     done

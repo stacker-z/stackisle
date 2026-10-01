@@ -34,13 +34,23 @@ run_checks() {
         "http://localhost:${AEM_PUBLISH_PORT}/libs/granite/core/content/login.html"
 
   echo -e "  ${BOLD}Docker${RESET}"
-  if docker info &>/dev/null; then
+  local derr
+  if derr="$(docker info 2>&1 >/dev/null)"; then
     for c in aem-dispatcher aem-nginx; do
       local st; st="$(docker inspect -f '{{.State.Status}}' "$c" 2>/dev/null || echo missing)"
       [[ "$st" == "running" ]] && pass "container ${c}: running" || bad "container ${c}: ${st}"
     done
   else
-    bad "Docker daemon not running"
+    # `docker info` failing ≠ daemon down: often this shell just can't reach it.
+    # Show the real reason instead of guessing.
+    local why; why="$(echo "$derr" | grep -m1 -iE 'denied|cannot connect|is the docker daemon|error' || echo "$derr" | tail -n 1)"
+    bad "Docker CLI cannot reach the daemon from this shell: ${why:-unknown error}"
+    if [[ "$derr" == *"permission denied"* ]]; then
+      info "→ this terminal predates your 'docker' group membership: open a new login shell"
+      info "  (log out/in, or restart the IDE that owns this terminal), or run: newgrp docker"
+    elif [[ "$derr" == *"Cannot connect"* || "$derr" == *"Is the docker daemon running"* ]]; then
+      info "→ check the daemon (linux: systemctl status docker · mac/win: Docker Desktop) and context: docker context show"
+    fi
   fi
 
   # Any real response from httpd means dispatcher is up; 502/503 = can't reach publish

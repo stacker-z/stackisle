@@ -142,35 +142,6 @@ java_major() {
   echo "${v%%.*}"
 }
 
-# JAVA_HOME blank in .env and the default `java` too old (or missing)?
-# Pick an installed JDK >= JAVA_REQUIRED automatically, per OS:
-#   mac:   /usr/libexec/java_home -v <N>   (Temurin/Oracle/Zulu installs)
-#   linux: /usr/lib/jvm/java-<N>-openjdk-* (apt/dnf installs), newest first
-# Only affects this project's scripts (exported for their child processes).
-auto_java_home() {
-  [[ -z "${JAVA_HOME:-}" ]] || return 0
-  local cur; cur="$(java_major 2>/dev/null)"
-  [[ "$cur" =~ ^[0-9]+$ && "$cur" -ge "$JAVA_REQUIRED" ]] && return 0
-  local cand="" d
-  case "$OS" in
-    mac)
-      cand="$(/usr/libexec/java_home -v "${JAVA_REQUIRED}+" 2>/dev/null \
-           || /usr/libexec/java_home -v "${JAVA_REQUIRED}" 2>/dev/null)" ;;
-    linux)
-      for d in $(ls -d /usr/lib/jvm/java-*-openjdk* /usr/lib/jvm/jdk-* 2>/dev/null | sort -rV); do
-        [[ -x "$d/bin/java" ]] || continue
-        local v; v="$("$d/bin/java" -version 2>&1 | awk -F '"' '/version/ {print $2; exit}')"
-        v="${v#1.}"; v="${v%%.*}"
-        [[ "$v" =~ ^[0-9]+$ && "$v" -ge "$JAVA_REQUIRED" ]] && { cand="$d"; break; }
-      done ;;
-  esac
-  if [[ -n "$cand" && -x "$cand/bin/java" ]]; then
-    export JAVA_HOME="$cand"
-    export PATH="$JAVA_HOME/bin:$PATH"
-  fi
-}
-auto_java_home
-
 # ── SDK globbing — never hardcode version strings ────────────
 sdk_zip()      { find -L "$SDK_DIR" -maxdepth 1 -type f -name "aem-sdk*.zip" 2>/dev/null | sort | tail -n 1; }
 sdk_dir()      { find -L "$SDK_DIR" -maxdepth 1 -type d -name "aem-sdk-*" 2>/dev/null | sort | tail -n 1; }

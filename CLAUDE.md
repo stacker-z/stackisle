@@ -204,13 +204,19 @@ dispatcher's host-side mapping for direct browser/curl access.
   introduce arbitrary wait limits. Nothing may delete or restart a repository while its JVM runs.
 - **JVM opts** — never add `-XX:MaxPermSize` (JVM refuses to start). Debug ports bind to
   `127.0.0.1` only — never `*` (an open JDWP port allows remote code execution).
-- **Only two paths are configurable** in `.env`; everything else derives from them
+- **Two paths are always configurable** in `.env`; everything else derives from them
   (`scripts/lib/common.sh`). Scripts use the derived variables, never literal paths.
   `make paths` prints the layout.
   ```
   SDK_DIR="./sdk"       # aem-sdk*.zip + unpacked aem-sdk-*/ + dispatcher-sdk-*/
   INSTALL_DIR="./sdk"   # author/ publish/ dispatcher/{src,docker,logs} certs/ nginx/conf.d/
   ```
+  One optional third override exists: `DISPATCHER_SRC_DIR` — blank (default) uses
+  `INSTALL_DIR/dispatcher/src` (seeded from the SDK); set it to point at an existing
+  checkout's `dispatcher/src` instead (e.g. your own AEM project repo). That directory
+  must already exist — `04-install-dispatcher.sh` never creates or seeds it, and
+  `uninstall.sh` never deletes it. Dispatcher bin/tools always come from `SDK_DIR`
+  regardless — only the vhost/farm *source config* is overridable.
 - **Deletions are item-specific** — uninstall/clean remove named stackisle files, never whole
   configurable directories, and process matching must target the java command line only.
 - **Config input file** for domains and necesary ports is `.env`. and cert name.

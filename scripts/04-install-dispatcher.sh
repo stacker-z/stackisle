@@ -2,9 +2,11 @@
 # ─────────────────────────────────────────────────────────────
 # 04-install-dispatcher.sh
 # 1. Self-extract aem-sdk-dispatcher-tools-*-unix.sh → ${SDK_DIR}/dispatcher-sdk-X.Y.Z/
-# 2. Seed ${DISPATCHER_SRC_DIR} from the SDK default config (only if empty)
-# 3. Discover/load the dispatcher-publish image that ships with the SDK
-#    and record it in ${DISPATCHER_DIR}/docker/image.env for docker compose
+# 2. Seed ${DISPATCHER_SRC_DIR} from the SDK default config (only if empty and
+#    DISPATCHER_SRC_DIR is not a custom override — those must already exist)
+# 3. Discover/load the dispatcher-publish image that ships with the SDK, and
+#    pin it + DISPATCHER_SDK_DIR + DISPATCHER_SRC_DIR into
+#    ${DISPATCHER_DIR}/docker/image.env for docker compose
 # ─────────────────────────────────────────────────────────────
 
 set -e
@@ -28,14 +30,22 @@ else
 fi
 
 # ── 2. Seed dispatcher config ────────────────────────────────
-mkdir -p "$DISPATCHER_SRC_DIR" "$DISPATCHER_LOG_DIR" "$(dirname "$DISPATCHER_IMAGE_FILE")"
+mkdir -p "$DISPATCHER_LOG_DIR" "$(dirname "$DISPATCHER_IMAGE_FILE")"
 SRC_REL="$(rel "$DISPATCHER_SRC_DIR")"
-if [[ -n "$(ls -A "$DISPATCHER_SRC_DIR" 2>/dev/null)" ]]; then
+if [[ "$DISPATCHER_SRC_DIR" != "$DISPATCHER_DIR/src" ]]; then
+  # Custom override (DISPATCHER_SRC_DIR set in .env) — must already exist;
+  # never created, seeded, or modified here.
+  [[ -d "$DISPATCHER_SRC_DIR" ]] \
+    || fail "DISPATCHER_SRC_DIR override ${SRC_REL} does not exist. Create it, or clear DISPATCHER_SRC_DIR in .env to use the default."
+  ok "${SRC_REL} (custom DISPATCHER_SRC_DIR) — using as-is, never seeded or modified."
+elif [[ -n "$(ls -A "$DISPATCHER_SRC_DIR" 2>/dev/null)" ]]; then
   ok "${SRC_REL} already has config — leaving it untouched."
 elif [[ -d "$DSDK/src" ]]; then
+  mkdir -p "$DISPATCHER_SRC_DIR"
   cp -R "$DSDK/src/." "$DISPATCHER_SRC_DIR/"
   ok "Seeded ${CYAN}${SRC_REL}${RESET} from the SDK default — customise vhosts/farms here."
 else
+  mkdir -p "$DISPATCHER_SRC_DIR"
   warn "No default src/ in $(rel "$DSDK") — add your dispatcher config to ${SRC_REL}."
 fi
 
@@ -70,9 +80,11 @@ fi
   || fail "$(rel "$DSDK")/lib/import_sdk_config.sh missing — this SDK version is not supported."
 
 # Read by compose(): image + SDK folder (its lib/ is mounted into the container)
+# + src folder (vhost/farm config, default or custom override — see step 2)
 cat > "$DISPATCHER_IMAGE_FILE" <<EOF
 DISPATCHER_IMAGE=${IMAGE}
 DISPATCHER_SDK_DIR=${DSDK}
+DISPATCHER_SRC_DIR=${DISPATCHER_SRC_DIR}
 EOF
 ok "Dispatcher image: ${CYAN}${IMAGE}${RESET} (saved to $(rel "$DISPATCHER_IMAGE_FILE"))"
 

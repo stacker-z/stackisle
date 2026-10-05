@@ -95,7 +95,7 @@ abs_path() {
   if [[ "$p" == /* ]]; then echo "${p%/}"; else echo "${ROOT_DIR}${p:+/${p%/}}"; fi
 }
 
-# Only two paths are configurable — everything else derives from them:
+# Two paths are always configurable — everything else derives from them:
 #   SDK_DIR      aem-sdk*.zip, unpacked aem-sdk-*/ and dispatcher-sdk-*/
 #   INSTALL_DIR  author/ publish/ dispatcher/{src,docker,logs,cache} certs/ nginx/conf.d/
 : "${SDK_DIR:=./sdk}"
@@ -106,9 +106,19 @@ INSTALL_DIR="$(abs_path "$INSTALL_DIR")"
 AUTHOR_DIR="$INSTALL_DIR/author"                  # author jar + crx-quickstart
 PUBLISH_DIR="$INSTALL_DIR/publish"                # publish jar + crx-quickstart
 DISPATCHER_DIR="$INSTALL_DIR/dispatcher"
-DISPATCHER_SRC_DIR="$DISPATCHER_DIR/src"          # vhost/farm config (seeded from SDK)
 CERTS_DIR="$INSTALL_DIR/certs"                    # <CERT_NAME>.crt/.key
 NGINX_CONF_DIR="$INSTALL_DIR/nginx/conf.d"        # generated nginx server blocks
+
+# DISPATCHER_SRC_DIR: optional third override. Blank (default) → vhost/farm
+# config lives at INSTALL_DIR/dispatcher/src, seeded from the SDK. Set it to
+# point at an existing checkout's dispatcher/src instead (e.g. your own AEM
+# project repo) — that directory must already exist; 04-install-dispatcher.sh
+# never creates or seeds it, and uninstall.sh never deletes it.
+if [[ -n "${DISPATCHER_SRC_DIR:-}" ]]; then
+  DISPATCHER_SRC_DIR="$(abs_path "$DISPATCHER_SRC_DIR")"
+else
+  DISPATCHER_SRC_DIR="$DISPATCHER_DIR/src"
+fi
 
 # Host OS name passed to the dispatcher container (as the SDK's docker_run.sh does)
 export HOST_OS="$(uname)"
@@ -166,6 +176,26 @@ java_major() {
   v=$(java -version 2>&1 | awk -F '"' '/version/ {print $2; exit}')
   [[ "$v" == 1.* ]] && v="${v#1.}"
   echo "${v%%.*}"
+}
+
+# ── Process ──────────────────────────────────────────────────
+# Full command line of a PID ("" if unreadable or the process is gone). /proc
+# is exact on Linux; `ps -ww` = unlimited width elsewhere (plain `ps` truncates
+# long JVM command lines when piped).
+proc_args() {
+  if [[ -r "/proc/$1/cmdline" ]]; then tr '\0' ' ' < "/proc/$1/cmdline"
+  else ps -ww -p "$1" -o args= 2>/dev/null; fi
+}
+
+# PID of any running "java … -jar <jar's basename>" process, wherever it was
+# started from — this project treats "is AEM Author/Publish running" as a
+# machine-wide question (one instance per port), not tied to INSTALL_DIR.
+# Shared by 02-create-author-publish.sh (skip creation/unpack against a live
+# instance) and 06-start-aem.sh (skip start, adopt an orphaned PID that has
+# no pidfile yet).
+find_java_pid() {  # find_java_pid <jar-path>
+  local jre="${1##*/}"; jre="${jre//./\\.}"
+  pgrep -f "^[^ ]*java .*-jar ${jre}( |$)" 2>/dev/null | head -n 1 || true
 }
 
 # ── SDK globbing — never hardcode version strings ────────────

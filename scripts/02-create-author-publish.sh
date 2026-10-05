@@ -14,7 +14,14 @@ JAR="$(quickstart_jar)"
 [[ -n "$JAR" ]] || fail "Quickstart jar not found. Run: make sdk"
 
 create_instance() {  # create_instance <name> <dir> <jar-path>
-  local name="$1" dir="$2" target="$3"
+  local name="$1" dir="$2" target="$3" pid
+
+  pid="$(find_java_pid "$target")"
+  if [[ -n "$pid" ]]; then
+    ok "${name} already running (PID ${pid}) — skipping creation (jar + crx-quickstart untouched)."
+    return
+  fi
+
   mkdir -p "$dir"
 
   if [[ -f "$target" ]]; then

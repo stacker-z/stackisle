@@ -32,28 +32,21 @@ pid_alive() {
   [[ "$args" == *java* && "$args" == *"-jar ${2##*/}"* ]]
 }
 
-# Full command line of a PID. /proc is exact on Linux; `ps -ww` = unlimited
-# width elsewhere (plain `ps` truncates long JVM command lines when piped).
-proc_args() {
-  if [[ -r "/proc/$1/cmdline" ]]; then tr '\0' ' ' < "/proc/$1/cmdline"
-  else ps -ww -p "$1" -o args= 2>/dev/null; fi
-}
-
-# PID of the java process running exactly this jar (never shells/editors/tail
-# that merely mention the file name)
-find_java_pid() {
-  local jre="${1##*/}"; jre="${jre//./\\.}"
-  pgrep -f "^[^ ]*java .*-jar ${jre}( |$)" 2>/dev/null | head -n 1 || true
-}
+# proc_args()/find_java_pid() are shared via scripts/lib/common.sh
 
 # Make <pidfile> point at the real java process: drop a stale PID and adopt a
-# running instance (started by hand, or by an older version of this script).
+# running instance (started by hand, by an older version of this script, or
+# from outside INSTALL_DIR entirely — "is AEM running" is a machine-wide
+# question here, not tied to this install's directory).
 sync_pid() {
   local pidf="$1" jar="$2" pid
   pid_alive "$pidf" "$jar" && return 0
   [[ -f "$pidf" ]] && { info "Removing stale $(rel "$pidf") (PID $(cat "$pidf" 2>/dev/null) is not this AEM instance)"; rm -f "$pidf"; }
   pid="$(find_java_pid "$jar")"
   if [[ -n "$pid" ]]; then
+    # The pidfile's directory may not exist yet (e.g. the running process was
+    # started from a different INSTALL_DIR) — create it just to hold the PID.
+    mkdir -p "$(dirname "$pidf")"
     echo "$pid" > "$pidf"
     info "Found running $(basename "$jar") (PID ${pid}) — recorded in $(rel "$pidf")"
   fi
@@ -125,7 +118,7 @@ stop_one() {
   while kill -0 "$pid" 2>/dev/null; do
     (( AEM_STOP_TIMEOUT > 0 && waited >= AEM_STOP_TIMEOUT )) && break
     sleep 5; waited=$((waited + 5))
-    (( waited % 30 == 0 )) && info "… still shutting down (${waited}s) — log: $(rel "$dir")/crx-quickstart/logs/error.log"
+    (( waited % 30 == 0 )) && info "… still shutting down (${waited}s) — log: at ~/crx-quickstart/logs/error.log"
   done
   trap - INT
   if kill -0 "$pid" 2>/dev/null; then

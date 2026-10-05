@@ -4,14 +4,16 @@
 #   Browser → https://<domain>
 #     [nginx]          INSTALL_DIR/certs  +  INSTALL_DIR/nginx/conf.d
 #       → http://aem-dispatcher:80          (host: localhost:${DISPATCHER_PORT})
-#         [dispatcher] INSTALL_DIR/dispatcher/src
+#         [dispatcher] DISPATCHER_SRC_DIR (INSTALL_DIR/dispatcher/src, or a custom
+#                      checkout override)
 #           → http://host.docker.internal:${AEM_PUBLISH_PORT}   (AEM Publish, local Java)
 #
 # AEM Author/Publish run on the host (scripts/06-start-aem.sh).
 # Ports, domains and INSTALL_DIR come from .env. Host folders are derived from
 # INSTALL_DIR exactly as in scripts/lib/common.sh (make exports it as an absolute path).
-# DISPATCHER_IMAGE comes from ${DISPATCHER_DIR}/docker/image.env (written by
-# scripts/04-install-dispatcher.sh) — always start via make / scripts.
+# DISPATCHER_IMAGE, DISPATCHER_SDK_DIR and DISPATCHER_SRC_DIR come from
+# ${DISPATCHER_DIR}/docker/image.env (written by scripts/04-install-dispatcher.sh)
+# — always start via make / scripts.
 # ─────────────────────────────────────────────────────────────
 
 name: stackisle
@@ -43,8 +45,10 @@ services:
       REWRITE_LOG_LEVEL: "${REWRITE_LOG_LEVEL:-warn}"
       ENABLE_MANAGED_REWRITE_MAPS_FLAG: "true"
     volumes:
-      # Your vhost/farm config
-      - ${INSTALL_DIR:-./sdk}/dispatcher/src:/mnt/dev/src:ro
+      # Your vhost/farm config. DISPATCHER_SRC_DIR is pinned into image.env by
+      # 04-install-dispatcher.sh (INSTALL_DIR/dispatcher/src by default, or a
+      # custom checkout if overridden in .env).
+      - ${DISPATCHER_SRC_DIR:-./sdk/dispatcher/src}:/mnt/dev/src:ro
       # SDK helpers — import_sdk_config.sh is what applies /mnt/dev/src at startup
       - ${DISPATCHER_SDK_DIR:-./sdk/dispatcher-sdk}/lib:/usr/lib/dispatcher-sdk:ro
       - ${DISPATCHER_SDK_DIR:-./sdk/dispatcher-sdk}/lib/import_sdk_config.sh:/docker_entrypoint.d/zzz-import-sdk-config.sh:ro

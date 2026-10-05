@@ -58,6 +58,10 @@ Skips if the jar is already there.
 Copies the quickstart jar to `INSTALL_DIR/author/aem-author-p4502.jar` and
 `INSTALL_DIR/publish/aem-publish-p4503.jar` (ports from `.env`), then `java -jar … -unpack`.
 Never overwrites an existing jar or unpacked `crx-quickstart/`.
+If a java process is already running that jar, anywhere on the machine (checked
+via `find_java_pid()` in `scripts/lib/common.sh` — "is AEM running" is treated as
+machine-wide, not tied to this install's directory), creation is skipped entirely
+before touching any files — never unpacks `crx-quickstart/` under a live instance.
 
 ## 03-create-cert.sh
 SANs = `CUSTOM_DOMAINS` + `localhost` + `127.0.0.1`.

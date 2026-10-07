@@ -37,6 +37,9 @@ its own (`bash scripts/NN-*.sh`) from any directory.
 | `http_code <curl args>` | Prints status, `000` if unreachable |
 | `java_major` | Handles `1.8` and `21.0.x` formats || `sdk_zip` `sdk_dir` `quickstart_jar` `dispatcher_tools_sh` `dispatcher_sdk_dir` | Globs under `SDK_DIR` (`find -L`, follows symlinks) — never hardcode versions |
 | `author_jar` `publish_jar` | `${AUTHOR_DIR}/aem-author-p<port>.jar` etc. |
+| `find_java_pid <jar>` | PID of a running `java … -jar <jar's basename>` anywhere on the machine, not tied to `INSTALL_DIR` |
+| `proc_cwd <pid>` | Working directory of a PID — `/proc/<pid>/cwd` on Linux, `lsof`'s `cwd` fd entry on macOS |
+| `instance_live_dir <jar> <fallback>` | Real dir of the running instance (via `find_java_pid`+`proc_cwd`), or `<fallback>` if not running. Used by `make logs-author`/`logs-publish` so they find the log wherever the instance actually started from |
 | `require_docker` | Fails if CLI missing or daemon unreachable |
 | `compose ...` | `docker compose` with `${DISPATCHER_DIR}/docker/image.env` exported |
 

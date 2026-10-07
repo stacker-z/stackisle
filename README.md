@@ -57,7 +57,7 @@ works when the code is merged — no "works on my machine", no surprises in the 
 
 One-command setup for a fully local AEMaaCS development environment on macOS, Windows, and Linux.
 
-![img_1.png](img_1.png)
+![arch-01.png](arch-01.png)
 
 ## What this sets up
 

@@ -161,11 +161,17 @@ wait: ## 09 Poll until healthy (HEALTH_TIMEOUT, default 900s)
 
 logs: logs-author ## Alias for logs-author
 
-logs-author: ## Tail Author error.log
-	@source $(S)/lib/common.sh; tail -F "$$AUTHOR_DIR/crx-quickstart/logs/error.log"
+logs-author: ## Tail Author error.log (finds the running instance wherever it was started from)
+	@source $(S)/lib/common.sh; dir="$$(instance_live_dir "$$(author_jar)" "$$AUTHOR_DIR")"; \
+	  log="$$dir/crx-quickstart/logs/error.log"; \
+	  [[ -f "$$log" ]] || fail "Author log not found at $$log (is Author running? make status)"; \
+	  tail -F "$$log"
 
-logs-publish: ## Tail Publish error.log
-	@source $(S)/lib/common.sh; tail -F "$$PUBLISH_DIR/crx-quickstart/logs/error.log"
+logs-publish: ## Tail Publish error.log (finds the running instance wherever it was started from)
+	@source $(S)/lib/common.sh; dir="$$(instance_live_dir "$$(publish_jar)" "$$PUBLISH_DIR")"; \
+	  log="$$dir/crx-quickstart/logs/error.log"; \
+	  [[ -f "$$log" ]] || fail "Publish log not found at $$log (is Publish running? make status)"; \
+	  tail -F "$$log"
 
 logs-dispatcher: ## Follow dispatcher logs (also saved to DISPATCHER_DIR/logs/)
 	@source $(S)/lib/common.sh; mkdir -p "$$DISPATCHER_LOG_DIR"; \

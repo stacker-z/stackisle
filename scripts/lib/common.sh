@@ -198,6 +198,28 @@ find_java_pid() {  # find_java_pid <jar-path>
   pgrep -f "^[^ ]*java .*-jar ${jre}( |$)" 2>/dev/null | head -n 1 || true
 }
 
+# Working directory of a running PID ("" if unreadable or the process is
+# gone). /proc is exact on Linux; lsof's "cwd" fd entry covers macOS (no /proc).
+proc_cwd() {
+  if [[ -r "/proc/$1/cwd" ]]; then readlink -f "/proc/$1/cwd" 2>/dev/null
+  else command -v lsof &>/dev/null && lsof -p "$1" 2>/dev/null | awk '$4=="cwd"{print $NF; exit}'; fi
+}
+
+# instance_live_dir <jar-path> <configured-dir> — crx-quickstart/ lives in
+# whatever directory the running instance's java process was actually
+# started from, which may not be <configured-dir> (e.g. INSTALL_DIR changed
+# since it started, or it was started by hand elsewhere). Falls back to
+# <configured-dir> when the instance isn't running at all.
+instance_live_dir() {
+  local jar="$1" fallback="$2" pid cwd
+  pid="$(find_java_pid "$jar")"
+  if [[ -n "$pid" ]]; then
+    cwd="$(proc_cwd "$pid")"
+    [[ -n "$cwd" ]] && { echo "$cwd"; return; }
+  fi
+  echo "$fallback"
+}
+
 # ── SDK globbing — never hardcode version strings ────────────
 sdk_zip()      { find -L "$SDK_DIR" -maxdepth 1 -type f -name "aem-sdk*.zip" 2>/dev/null | sort | tail -n 1; }
 sdk_dir()      { find -L "$SDK_DIR" -maxdepth 1 -type d -name "aem-sdk-*" 2>/dev/null | sort | tail -n 1; }

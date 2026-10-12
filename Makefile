@@ -30,6 +30,7 @@ CYAN  := \033[36m
 
 .PHONY: all help env install-prereq prereq setup \
         sdk sdk-unpack instances certs dispatcher dispatcher-validate nginx hosts hosts-remove \
+        browser-no-admin \
         start start-aem start-dispatcher start-nginx wknd \
         stop stop-aem stop-dispatcher stop-nginx restart restart-aem reload-nginx \
         set-paths paths status health urls smoke wait logs logs-author logs-publish logs-dispatcher logs-nginx \
@@ -99,6 +100,9 @@ hosts: ## Map CUSTOM_DOMAINS → 127.0.0.1 in hosts file (sudo)
 
 hosts-remove: ## Remove stackisle entries from hosts file (sudo)
 	@bash update-etc-hosts.sh remove
+
+browser-no-admin: ## Alt to `make hosts`: open the sites in a throwaway Chrome/Edge profile, no sudo/hosts file
+	@bash $(S)/open-browser-no-admin.sh
 
 ##@ Run
 start: start-aem start-dispatcher start-nginx ## 06-08 Start AEM, dispatcher, nginx

@@ -64,6 +64,9 @@ aem-local-dev/
 │   ├── uninstall.sh             # `make uninstall` — revert everything (keeps zip, .env)
 │   ├── install-wknd.sh          # `make wknd` / `start-aem WKND=1` — optional WKND sample site
 │   ├── set-paths.sh             # `make set-paths` — write SDK_DIR / INSTALL_DIR into .env
+│   ├── open-browser-no-admin.sh # `make browser-no-admin` — admin-free alt to `make hosts`
+│                                #   (Chrome/Edge --host-resolver-rules, scoped to that window only;
+│                                #   no Safari equivalent — Safari still needs `make hosts`)
 │   └── magento/                 # Magento TEST stack — ON HOLD, untested, not wired into make
 │                                #   (see docs/session-handoff.md → open items)
 │
@@ -125,6 +128,7 @@ make certs       # 03  (FORCE=1 to regenerate)
 make dispatcher  # 04
 make nginx       # 05
 make hosts       # /etc/hosts
+make browser-no-admin  # alt to `make hosts` — no sudo, scoped to one Chrome window
 make start       # 06 + 07 + 08
 make health      # 09  (make wait = poll until healthy)
 

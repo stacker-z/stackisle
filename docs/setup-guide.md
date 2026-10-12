@@ -248,6 +248,14 @@ Windows: `C:\Windows\System32\drivers\etc\hosts` (Git Bash as Administrator).
 
 **Undo:** `make hosts-remove` removes only the tagged lines and keeps `/etc/hosts.stackisle.bak`.
 
+**No admin access (temporary fall-back)?** `make browser-no-admin` opens the sites in a throwaway
+Chrome or Edge profile (whichever it finds first) using `--host-resolver-rules`
+to map each domain to `HOSTS_IP` inside the browser process — no `/etc/hosts`
+write, no sudo. It only covers that one window; curl, other profiles, and
+other browsers still need `make hosts` (or their own `--resolve`/`--connect-to`
+flag). **Safari has no equivalent flag** — this path can't support it at all;
+Safari users need `make hosts`.
+
 ---
 
 ## Step 9 — Start AEM Author and Publish

@@ -1,13 +1,19 @@
 # Stackisle
-Your isolated local island of services.
-- AEMaaCS
-- Magento (ACaaCS)
-- Docker
-- Kubernetes
-- Terraform
-...and more!
 
-The starting reference point is from the AEMaaCS.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-informational)](#prerequisites)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](#contributing)
+[![GitHub stars](https://img.shields.io/github/stars/stacker-z/stackisle?style=social)](https://github.com/stacker-z/stackisle/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/stacker-z/stackisle)](https://github.com/stacker-z/stackisle/issues)
+
+**One-command local developer environment for Adobe Experience Manager as a Cloud Service
+(AEMaaCS)** — AEM Author, Publish, Dispatcher and HTTPS, identical on macOS, Linux and
+Windows. Your isolated local island of services.
+
+- **AEMaaCS** — AEM Author + Publish, Dispatcher, nginx SSL, real site domains *(available now)*
+- Magento (ACaaCS), Docker, Kubernetes, Terraform ...and more — planned stacks, see [Extending](#extending)
+
+The starting reference point is AEMaaCS — clone this repo, drop in your AEM SDK, run `make`.
 
 ## Why Stackisle — one setup for every developer
 
@@ -27,39 +33,40 @@ works when the code is merged — no "works on my machine", no surprises in the 
 - **Built for enterprise scale** — critical for complex projects with multiple teams, brands and
   domains, delivered at true global scale, where everyone must build and test on the same baseline.
 
-**Start here** — Stackisle is the starting point for every project to clone, add to it own repo as needed and the SDK, run `make`. An opportunity to enhance and make it your own playbook by partnering with the [Claude.ai skills](./.claude/skills/SKILL.md).
+**Start here** — Stackisle is the starting point for every project: clone it, add it to your own
+repo as needed, drop in the AEM SDK, run `make`. An opportunity to enhance and make it your own
+playbook by partnering with the [Claude.ai skills](./.claude/skills/SKILL.md).
 
-# Preview 
-**MacOS**
+## Preview
+
+**macOS**
 
 `make prereq`
 
-![precheck.png](precheck.png)
+![Terminal output of `make prereq` on macOS — Docker, Java 21, mkcert and all prerequisites satisfied](precheck.png)
 
 `make health`
 
-![health.png](health.png)
+![Terminal output of `make health` on macOS — AEM Author, Publish, Dispatcher and nginx all healthy](health.png)
 
 **Linux**
 
-`pre-check` 
+`make prereq`
 
-![img_2.png](img_2.png)
+![Terminal output of `make prereq` on Linux — Docker, Java 21, mkcert and all prerequisites satisfied](unix_2.png)
 
 `make health`
 
-![img.png](img.png)
+![Terminal output of `make health` on Linux — AEM Author, Publish, Dispatcher and nginx all healthy](unix.png)
 
-`https://dev-local-www-brand.com`
-![screen.png](screen.png)
+`https://dev-local-www-brand.com` — the WKND sample site served locally over HTTPS, through nginx and the Dispatcher
+![Browser showing the WKND sample site on the local HTTPS domain dev-local-www-brand.com](screen.png)
 
-# AEM local DEV environment
+## Architecture — what this sets up
 
 One-command setup for a fully local AEMaaCS development environment on macOS, Windows, and Linux.
 
-![arch-01.png](arch-01.png)
-
-## What this sets up
+![Stackisle architecture diagram: browser → nginx SSL → AEM Dispatcher → AEM Publish, with AEM Author alongside](arch-01.png)
 
 ```
 Browser → https://dev-local-www-brand.com
@@ -156,8 +163,7 @@ Changing paths doesn't move an existing install. `set-paths` warns and explains 
 | `make`            | all of the above                                  | One command to install and start all above services |
 | `stop`            | `08`, `07`, `06` (stop)                           | Graceful stop of all services                       |
 
-# Refer detailed step by step command guide
-from [./docs/setup-guide.md](./docs/setup-guide.md)
+For the detailed step-by-step command guide, see [./docs/setup-guide.md](./docs/setup-guide.md).
 
 ## Adding a domain
 
@@ -196,4 +202,19 @@ Latest release from the GitHub repo in `WKND_REPO` (default `adobe/aem-guides-wk
 it tests `SMOKE_PATH` (default the WKND home page) on every hop and site.
 
 ## Extending
-**Magento (on hold):** - TODO
+
+New stacks go in `mk/<stack>.mk` and are auto-included by the Makefile — no edits to the
+core `Makefile` needed.
+
+**Magento (ACaaCS):** on hold, untested, not yet wired into `make`.
+
+## Contributing
+
+Issues and PRs are welcome — especially new platform scripts, additional stacks under `mk/`,
+or fixes for environments this hasn't been tested on yet. If Stackisle saves your team the
+"works on my machine" debugging cycle, a ⭐ on the repo helps the next developer find it too.
+
+## License
+
+[MIT](./LICENSE) — use it, fork it, adapt it to your own project's terms. Provided as-is,
+with no warranty; see the [LICENSE](./LICENSE) file for the full text.

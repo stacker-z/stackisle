@@ -43,30 +43,43 @@ playbook by partnering with the [Claude.ai skills](./.claude/skills/SKILL.md).
 
 `make prereq`
 
-![Terminal output of `make prereq` on macOS — Docker, Java 21, mkcert and all prerequisites satisfied](precheck.png)
+![Terminal output of `make prereq` on macOS — Docker, Java 21, mkcert and all prerequisites satisfied](docs/img/precheck.png)
 
 `make health`
 
-![Terminal output of `make health` on macOS — AEM Author, Publish, Dispatcher and nginx all healthy](health.png)
+![Terminal output of `make health` on macOS — AEM Author, Publish, Dispatcher and nginx all healthy](docs/img/health.png)
 
 **Linux**
 
 `make prereq`
 
-![Terminal output of `make prereq` on Linux — Docker, Java 21, mkcert and all prerequisites satisfied](unix_2.png)
+![Terminal output of `make prereq` on Linux — Docker, Java 21, mkcert and all prerequisites satisfied](docs/img/unix_2.png)
 
 `make health`
 
-![Terminal output of `make health` on Linux — AEM Author, Publish, Dispatcher and nginx all healthy](unix.png)
+![Terminal output of `make health` on Linux — AEM Author, Publish, Dispatcher and nginx all healthy](docs/img/unix.png)
+
+
+**Window**
+
+`make prereq`
+
+![Terminal output of `make prereq` on Window — Docker, Java 21, mkcert and all prerequisites satisfied](docs/img/window_prereq.png)
+
+`make health`
+
+![Terminal output of `make health` on Window — AEM Author, Publish, Dispatcher and nginx all healthy](docs/img/window_health.png)
+
+---
 
 `https://dev-local-www-brand.com` — the WKND sample site served locally over HTTPS, through nginx and the Dispatcher
-![Browser showing the WKND sample site on the local HTTPS domain dev-local-www-brand.com](screen.png)
+![Browser showing the WKND sample site on the local HTTPS domain dev-local-www-brand.com](docs/img/screen.png)
 
 ## Architecture — what this sets up
 
 One-command setup for a fully local AEMaaCS development environment on macOS, Windows, and Linux.
 
-![Stackisle architecture diagram: browser → nginx SSL → AEM Dispatcher → AEM Publish, with AEM Author alongside](arch-01.png)
+![Stackisle architecture diagram: browser → nginx SSL → AEM Dispatcher → AEM Publish, with AEM Author alongside](docs/img/arch-01.png)
 
 ```
 Browser → https://dev-local-www-brand.com

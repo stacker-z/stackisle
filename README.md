@@ -35,7 +35,7 @@ works when the code is merged — no "works on my machine", no surprises in the 
 
 **Start here** — Stackisle is the starting point for every project: clone it, add it to your own
 repo as needed, drop in the AEM SDK, run `make`. An opportunity to enhance and make it your own
-playbook by partnering with the [Claude.ai skills](./.claude/skills/SKILL.md).
+playbook by partnering with the [Claude.ai skills](./.claude/skills/stackisle/SKILL.md).
 
 ## Preview
 
@@ -187,7 +187,7 @@ CUSTOM_DOMAINS="dev-local-www-brand.com dev-local-www-shop.brand.com dev-local-w
 make certs nginx hosts reload-nginx
 ```
 The dispatcher's default config accepts every host (`*`), so no dispatcher change is
-needed. For per-domain vhosts, see `.claude/skills/references/dispatcher-config.md`.
+needed. For per-domain vhosts, see `.claude/skills/stackisle/references/dispatcher-config.md`.
 
 ## Day to day
 

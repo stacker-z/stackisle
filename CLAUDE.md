@@ -104,12 +104,13 @@ aem-local-dev/
 │
 └── .claude/
     └── skills/
-        ├── SKILL.md             # Claude Code skill definition
-        └── references/          # Detailed reference docs (loaded on demand)
-            ├── aem-concepts.md
-            ├── dispatcher-config.md
-            ├── script-guide.md
-            └── troubleshooting.md
+        └── stackisle/
+            ├── SKILL.md         # Claude Code skill definition
+            └── references/      # Detailed reference docs (loaded on demand)
+                ├── aem-concepts.md
+                ├── dispatcher-config.md
+                ├── script-guide.md
+                └── troubleshooting.md
 ```
 
 ## Entry points
@@ -242,7 +243,7 @@ Read before answering — do not guess:
 
 | File | Load when |
 |------|-----------|
-| `.claude/skills/references/aem-concepts.md` | AEM architecture, run modes, OSGi, Sling, HTL |
-| `.claude/skills/references/dispatcher-config.md` | Editing vhost, farm, cache, rewrites |
-| `.claude/skills/references/troubleshooting.md` | Any error or service not starting |
-| `.claude/skills/references/script-guide.md` | Understanding or modifying any script in `scripts/` |
+| `.claude/skills/stackisle/references/aem-concepts.md` | AEM architecture, run modes, OSGi, Sling, HTL |
+| `.claude/skills/stackisle/references/dispatcher-config.md` | Editing vhost, farm, cache, rewrites |
+| `.claude/skills/stackisle/references/troubleshooting.md` | Any error or service not starting |
+| `.claude/skills/stackisle/references/script-guide.md` | Understanding or modifying any script in `scripts/` |
